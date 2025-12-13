@@ -84,7 +84,11 @@ with tab_img:
 
 # ================== TAB VIDEO ==================
 with tab_vid:
-    st.subheader("Deteksi Video - Mode Streaming")
+    st.subheader("Deteksi Video")
+    st.caption("Mode streaming (aman untuk Streamlit Cloud)")
+
+    if "run_video" not in st.session_state:
+        st.session_state.run_video = False
 
     vid_file = st.file_uploader(
         "Upload Video",
@@ -93,7 +97,6 @@ with tab_vid:
     )
 
     if vid_file is not None:
-        # Simpan video ke file sementara
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
             tmp.write(vid_file.read())
             video_path = tmp.name
@@ -101,52 +104,55 @@ with tab_vid:
         st.markdown("**Input Video**")
         st.video(video_path)
 
-        FRAME_SKIP = 3
-
         if st.button("Mulai Deteksi Video"):
-            cap = cv2.VideoCapture(video_path)
+            st.session_state.run_video = True
 
-            frame_placeholder = st.empty()
-            progress = st.progress(0)
+    # ===== STREAMING LOOP =====
+    if st.session_state.run_video:
+        cap = cv2.VideoCapture(video_path)
 
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 1
-            frame_idx = 0
-            processed = 0
+        frame_placeholder = st.empty()
+        progress = st.progress(0)
 
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret:
-                    break
+        FRAME_SKIP = 3
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 1
+        frame_idx = 0
+        processed = 0
 
-                # Frame skipping
-                if frame_idx % FRAME_SKIP == 0:
-                    results = model.predict(
-                        frame,
-                        conf=conf,
-                        verbose=False
-                    )
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-                    annotated = results[0].plot()
-                    annotated = cv2.cvtColor(
-                        annotated, cv2.COLOR_BGR2RGB
-                    )
+            if frame_idx % FRAME_SKIP == 0:
+                results = model.predict(
+                    frame,
+                    conf=conf,
+                    verbose=False
+                )
 
-                    frame_placeholder.image(
-                        annotated,
-                        use_container_width=True
-                    )
+                annotated = results[0].plot()
+                annotated = cv2.cvtColor(
+                    annotated, cv2.COLOR_BGR2RGB
+                )
 
-                    processed += 1
+                frame_placeholder.image(
+                    annotated,
+                    use_container_width=True
+                )
 
-                frame_idx += 1
-                progress.progress(min(frame_idx / total_frames, 1.0))
+                processed += 1
 
-            cap.release()
+            frame_idx += 1
+            progress.progress(min(frame_idx / total_frames, 1.0))
 
-            st.success(
-                f"Deteksi video selesai "
-                f"(Frame diproses: {processed})"
-            )
+        cap.release()
+        st.session_state.run_video = False
+
+        st.success(
+            f"Deteksi video selesai (Frame diproses: {processed})"
+        )
+
 
 # ================== TAB WEBCAM ==================
 with tab_cam:
