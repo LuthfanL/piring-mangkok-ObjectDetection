@@ -129,7 +129,7 @@ with tab_vid:
             cap.release()
             out.release()
 
-            st.success("Video berhasil diproses 🎉")
+            st.success("Video berhasil diproses.")
 
             with open(output_path, "rb") as f:
                 video_bytes = f.read()
