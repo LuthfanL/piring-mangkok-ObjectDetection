@@ -8,7 +8,7 @@ import av
 
 # ================== PAGE CONFIG ==================
 st.set_page_config(
-    page_title="YOLOv8 Piring & Mangkok",
+    page_title="Deteksi Piring & Mangkok YoloV8",
     layout="centered"
 )
 
