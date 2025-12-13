@@ -14,7 +14,7 @@ st.set_page_config(
 
 # ================== HEADER ==================
 st.markdown("""
-<h1 style="text-align:center;">🍽️ Deteksi Piring & Mangkok</h1>
+<h1 style="text-align:center;">Deteksi Piring & Mangkok</h1>
 <p style="text-align:center; color:gray;">
 YOLOv8 Custom Dataset Mangkok dan Piring Object Detection
 </p>
