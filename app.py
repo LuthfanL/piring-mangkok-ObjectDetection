@@ -108,7 +108,7 @@ with tab_vid:
             fps    = cap.get(cv2.CAP_PROP_FPS) or 25
 
             output_path = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4").name
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            fourcc = cv2.VideoWriter_fourcc(*"avc1")
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
             total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -121,19 +121,20 @@ with tab_vid:
                     break
 
                 results = model.predict(frame, conf=conf, verbose=False)
-                annotated = results[0].plot()
-                out.write(annotated)
+                out.write(results[0].plot())
 
                 i += 1
                 progress.progress(min(i / total, 1.0))
 
             cap.release()
             out.release()
-            progress.empty()
 
             st.success("Video berhasil diproses.")
 
-            st.video(output_path)
+            with open(output_path, "rb") as f:
+                video_bytes = f.read()
+
+            st.video(video_bytes, format="video/mp4")
 
 # ================== TAB WEBCAM ==================
 with tab_cam:
