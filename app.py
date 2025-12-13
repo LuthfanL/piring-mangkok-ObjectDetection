@@ -16,7 +16,7 @@ st.set_page_config(
 st.markdown("""
 <h1 style="text-align:center;">Deteksi Piring & Mangkok</h1>
 <p style="text-align:center; color:gray;">
-YOLOv8 Custom Dataset Mangkok dan Piring Object Detection
+YOLOv8 Custom Dataset Piring dan Mangkok Object Detection
 </p>
 """, unsafe_allow_html=True)
 
@@ -161,6 +161,6 @@ with tab_cam:
 # ================== FOOTER ==================
 st.markdown("---")
 st.caption(
-    "YOLOv8 Custom Model • Streamlit Deployment • "
+    "YOLOv8 Custom Model & Dataset Piring dan Mangkok Object Detection - "
     "Muhammad Luthfan Lazuardi (24060122120010)"
 )
