@@ -97,21 +97,23 @@ with tab_vid:
             tmp.write(vid_file.read())
             vid_path = tmp.name
 
-        st.markdown("**Input Video**")
-        st.video(vid_path)
+        st.info("Video berhasil diupload. Klik tombol di bawah untuk memproses.")
 
-        if st.button("Proses Video"):
+        if st.button("Proses"):
             cap = cv2.VideoCapture(vid_path)
 
             width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps    = cap.get(cv2.CAP_PROP_FPS) or 25
 
-            output_path = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4").name
-            fourcc = cv2.VideoWriter_fourcc(*"avc1")
+            output_path = tempfile.NamedTemporaryFile(
+                delete=False, suffix="_hasil_deteksi.mp4"
+            ).name
+
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-            total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 1
             progress = st.progress(0)
             i = 0
 
@@ -121,20 +123,25 @@ with tab_vid:
                     break
 
                 results = model.predict(frame, conf=conf, verbose=False)
-                out.write(results[0].plot())
+                annotated = results[0].plot()
+                out.write(annotated)
 
                 i += 1
                 progress.progress(min(i / total, 1.0))
 
             cap.release()
             out.release()
+            progress.empty()
 
-            st.success("Video berhasil diproses.")
+            st.success("Video selesai diproses.")
 
             with open(output_path, "rb") as f:
-                video_bytes = f.read()
-
-            st.video(video_bytes, format="video/mp4")
+                st.download_button(
+                    label="Download Video Hasil Deteksi",
+                    data=f,
+                    file_name="hasil_deteksi_piring_mangkok.mp4",
+                    mime="video/mp4"
+                )
 
 # ================== TAB WEBCAM ==================
 with tab_cam:
