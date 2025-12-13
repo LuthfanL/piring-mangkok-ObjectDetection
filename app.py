@@ -84,57 +84,69 @@ with tab_img:
 
 # ================== TAB VIDEO ==================
 with tab_vid:
-    st.subheader("Deteksi Video")
+    st.subheader("Deteksi Video - Mode Streaming")
 
     vid_file = st.file_uploader(
         "Upload Video",
         type=["mp4", "avi", "mov"],
-        key="video_uploader"
+        key="video_stream"
     )
 
     if vid_file is not None:
+        # Simpan video ke file sementara
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
             tmp.write(vid_file.read())
-            vid_path = tmp.name
+            video_path = tmp.name
 
         st.markdown("**Input Video**")
-        st.video(vid_path)
+        st.video(video_path)
 
-        if st.button("Proses Video"):
-            cap = cv2.VideoCapture(vid_path)
+        FRAME_SKIP = 3
 
-            width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            fps    = cap.get(cv2.CAP_PROP_FPS) or 25
+        if st.button("Mulai Deteksi Video"):
+            cap = cv2.VideoCapture(video_path)
 
-            output_path = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4").name
-            fourcc = cv2.VideoWriter_fourcc(*"avc1")
-            out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-
-            total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            frame_placeholder = st.empty()
             progress = st.progress(0)
-            i = 0
+
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 1
+            frame_idx = 0
+            processed = 0
 
             while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret:
                     break
 
-                results = model.predict(frame, conf=conf, verbose=False)
-                out.write(results[0].plot())
+                # Frame skipping
+                if frame_idx % FRAME_SKIP == 0:
+                    results = model.predict(
+                        frame,
+                        conf=conf,
+                        verbose=False
+                    )
 
-                i += 1
-                progress.progress(min(i / total, 1.0))
+                    annotated = results[0].plot()
+                    annotated = cv2.cvtColor(
+                        annotated, cv2.COLOR_BGR2RGB
+                    )
+
+                    frame_placeholder.image(
+                        annotated,
+                        use_container_width=True
+                    )
+
+                    processed += 1
+
+                frame_idx += 1
+                progress.progress(min(frame_idx / total_frames, 1.0))
 
             cap.release()
-            out.release()
 
-            st.success("Video berhasil diproses.")
-
-            with open(output_path, "rb") as f:
-                video_bytes = f.read()
-
-            st.video(video_bytes, format="video/mp4")
+            st.success(
+                f"Deteksi video selesai "
+                f"(Frame diproses: {processed})"
+            )
 
 # ================== TAB WEBCAM ==================
 with tab_cam:
