@@ -71,7 +71,7 @@ with tab_img:
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("**Input Image**")
-            st.image(np.array(image), channels="RGB", use_container_width=True)
+            st.image(image, use_container_width=True)
         with col2:
             st.markdown("**Hasil Deteksi**")
             st.image(annotated_rgb, use_container_width=True)
