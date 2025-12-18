@@ -5,7 +5,7 @@ import tempfile
 import cv2
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 import av
-import numpy as np
+
 
 # ================== PAGE CONFIG ==================
 st.set_page_config(
@@ -71,7 +71,7 @@ with tab_img:
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("**Input Image**")
-            st.image(np.array(image), use_container_width=True)
+            st.image(image, use_container_width=True)
         with col2:
             st.markdown("**Hasil Deteksi**")
             st.image(annotated_rgb, use_container_width=True)
