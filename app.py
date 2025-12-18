@@ -62,33 +62,25 @@ with tab_img:
             tmp.write(img_file.read())
             img_path = tmp.name
 
-        st.info("Gambar berhasil diupload. Klik tombol di bawah untuk memproses.")
+        image = Image.open(img_path).convert("RGB")
+        results = model.predict(img_path, conf=conf, verbose=False)
+        annotated = results[0].plot()
+        annotated_rgb = cv2.cvtColor(annotated, cv2.COLOR_BGR2RGB)
 
-        if st.button("Proses Gambar"):
-            image = Image.open(img_path).convert("RGB")
-            results = model.predict(img_path, conf=conf, verbose=False)
-            annotated = results[0].plot()
-            output_path = tempfile.NamedTemporaryFile(
-                delete=False, suffix="_hasil_deteksi.jpg"
-            ).name
-            cv2.imwrite(output_path, annotated)
-            st.success("Gambar selesai diproses.")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**Input Image**")
+            st.image(image, use_container_width=True)
+        with col2:
+            st.markdown("**Hasil Deteksi**")
+            st.image(annotated_rgb, use_container_width=True)
 
-            with open(output_path, "rb") as f:
-                st.download_button(
-                    label="Download Gambar Hasil Deteksi",
-                    data=f,
-                    file_name="hasil_deteksi_piring_mangkok.jpg",
-                    mime="image/jpeg"
-                )
-
-            with st.expander("Detail Deteksi"):
-                for box in results[0].boxes:
-                    cls = int(box.cls[0])
-                    label = model.names[cls]
-                    score = float(box.conf[0])
-                    st.write(f"- **{label}** ({score:.2f})")
-
+        with st.expander("Detail Deteksi"):
+            for box in results[0].boxes:
+                cls = int(box.cls[0])
+                label = model.names[cls]
+                score = float(box.conf[0])
+                st.write(f"- **{label}** ({score:.2f})")
 
 # ================== TAB VIDEO ==================
 with tab_vid:
